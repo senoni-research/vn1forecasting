@@ -1,0 +1,87 @@
+[tool.poetry]
+name = "vn1forecasting"
+version = "0.1.0"
+description = "A Python library for the VN1 Forecasting Accuracy Challenge."
+authors = ["Senoni Research <nasdag@senoni.com>"]
+readme = "README.md"
+packages = [{ include = "vn1forecasting" }]
+homepage = "https://github.com/senoni-research/vn1forecasting"
+repository = "https://github.com/senoni-research/vn1forecasting"
+keywords = ["forecasting", "transformer", "challenge", "demand"]
+license = "MIT"
+classifiers = [
+    "Programming Language :: Python :: 3.11",
+    "License :: OSI Approved :: MIT License",
+    "Intended Audience :: Developers",
+    "Topic :: Software Development :: Libraries :: Python Modules"
+]
+
+[tool.poetry.dependencies]
+python = "3.11.8"
+python-dotenv = "^1.0.1"
+requests = "^2.32.3"
+pandas = "^2.2.3"
+numpy = "^2.2.2"
+
+[tool.poetry.group.dev.dependencies]
+black = "^24.4.1"
+autoflake8 = "^0.4.1"
+flake8 = "^7.0.0"
+coverage = "^7.5.0"
+mypy = "^1.10.0"
+isort = "^5.13.2"
+autoflake = "^2.3.1"
+pytest = "^8.1.1"
+pytest-cov = "^5.0.0"
+
+[tool.mypy]
+python_version = "3.11"
+disallow_any_generics = true
+disallow_untyped_calls = true
+disallow_untyped_defs = true
+disallow_untyped_decorators = true
+ignore_errors = false
+ignore_missing_imports = true
+implicit_reexport = false
+strict_optional = true
+strict_equality = true
+no_implicit_optional = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+warn_unused_configs = true
+warn_unreachable = true
+warn_no_return = true
+warn_return_any = true
+
+[tool.flake8]
+max-line-length = 120
+exclude = ".git __pycache__ .mypy_cache .pytest_cache .reports notebooks _resource"
+extend-ignore = ["E203"]
+
+[tool.pytest.ini_options]
+addopts = "--cov=vn1forecasting --cov-report=term-missing --cov-report=xml:.reports/coverage.xml --cov-report=html:.reports/htmlcov"
+testpaths = ["tests"]
+junit_family = "xunit2"
+norecursedirs = ".git __pycache__ .mypy_cache .pytest_cache .reports notebooks _resource"
+
+[tool.coverage.report]
+omit = ["*/__init__.py", "*/tests/*", ".mypy_cache", ".reports/*", "notebooks/*"]
+show_missing = true
+
+[tool.black]
+line-length = 120
+target-version = ["py311"]
+exclude = '(\.git|\.mypy_cache|\.pytest_cache|\.reports|build|dist|notebooks|_resource)'
+
+[tool.isort]
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+line_length = 120
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+main = "vn1forecasting.__main__:main"
