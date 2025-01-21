@@ -5,7 +5,7 @@
 
 # Phony targets
 .PHONY: all help build install install-dev clean clean-build clean-pyc clean-test \
-        lint lint-check check-types unittest coverage test run build-whl update-deps
+        lint lint-check check-types unittest coverage test run build-whl update-deps download_data
 
 # Colors for help messages
 CYAN  := \033[36m
@@ -17,6 +17,22 @@ help: ## Display this help message
 
 # Default workflow: clean, build, install dev dependencies, and run tests
 all: clean build install-dev test ## Run the full development workflow
+
+# Download competition datasets
+download_data: ## Download all competition datasets
+	@echo "$(CYAN)Downloading competition datasets...$(COFF)"
+	mkdir -p data
+	curl https://www.datasource.ai/attachments/eyJpZCI6Ijk4NDYxNjE2NmZmZjM0MGRmNmE4MTczOGMyMzI2ZWI2LmNzdiIsInN0b3JhZ2UiOiJzdG9yZSIsIm1ldGFkYXRhIjp7ImZpbGVuYW1lIjoiUGhhc2UgMCAtIFNhbGVzLmNzdiIsInNpemUiOjEwODA0NjU0LCJtaW1lX3R5cGUiOiJ0ZXh0L2NzdiJ9fQ -o data/phase_0_sales.csv
+	curl https://www.datasource.ai/attachments/eyJpZCI6ImM2OGQxNGNmNTJkZDQ1MTUyZTg0M2FkMDAyMjVlN2NlLmNzdiIsInN0b3JhZ2UiOiJzdG9yZSIsIm1ldGFkYXRhIjp7ImZpbGVuYW1lIjoiUGhhc2UgMSAtIFNhbGVzLmNzdiIsInNpemUiOjEwMTgzOTYsIm1pbWVfdHlwZSI6InRleHQvY3N2In19 -o data/phase_1_sales.csv 
+	curl https://www.datasource.ai/attachments/eyJpZCI6IjhlNmJmNmU3ZTlhNWQ4NTcyNGVhNTI4YjAwNTk3OWE1LmNzdiIsInN0b3JhZ2UiOiJzdG9yZSIsIm1ldGFkYXRhIjp7ImZpbGVuYW1lIjoiUGhhc2UgMiAtIFNhbGVzLmNzdiIsInNpemUiOjEwMTI0MzcsIm1pbWVfdHlwZSI6InRleHQvY3N2In19 -o data/phase_2_sales.csv 
+	curl https://www.datasource.ai/attachments/eyJpZCI6IjI1NDQxYmMyMTQ3MTA0MjJhMDcyYjllODcwZjEyNmY4LmNzdiIsInN0b3JhZ2UiOiJzdG9yZSIsIm1ldGFkYXRhIjp7ImZpbGVuYW1lIjoicGhhc2UgMiBzdWJtaXNzaW9uIGV4YW1pbmUgc21vb3RoZWQgMjAyNDEwMTcgRklOQUwuY3N2Iiwic2l6ZSI6MTk5MzAzNCwibWltZV90eXBlIjoidGV4dC9jc3YifX0 -o data/solution_1st_place.csv
+	curl https://www.datasource.ai/attachments/eyJpZCI6IjU3ODhjZTUwYTU3MTg3NjFlYzMzOWU0ZTg3MWUzNjQxLmNzdiIsInN0b3JhZ2UiOiJzdG9yZSIsIm1ldGFkYXRhIjp7ImZpbGVuYW1lIjoidm4xX3N1Ym1pc3Npb25fanVzdGluX2Z1cmxvdHRlLmNzdiIsInNpemUiOjM5MDkzNzksIm1pbWVfdHlwZSI6InRleHQvY3N2In19 -o data/solution_2nd_place.csv
+	curl https://www.datasource.ai/attachments/eyJpZCI6ImE5NzcwNTZhMzhhMTc2ZWJjODFkMDMwMTM2Y2U2MTdlLmNzdiIsInN0b3JhZ2UiOiJzdG9yZSIsIm1ldGFkYXRhIjp7ImZpbGVuYW1lIjoiYXJzYW5pa3phZF9zdWIuY3N2Iiwic2l6ZSI6Mzg4OTcyNCwibWltZV90eXBlIjoidGV4dC9jc3YifX0 -o data/solution_3rd_place.csv
+	curl https://www.datasource.ai/attachments/eyJpZCI6ImVlZmUxYWY2NDFjOWMwM2IxMzRhZTc2MzI1Nzg3NzIxLmNzdiIsInN0b3JhZ2UiOiJzdG9yZSIsIm1ldGFkYXRhIjp7ImZpbGVuYW1lIjoiVEZUX3R1bmVkX1YyX3NlZWRfNDIuY3N2Iiwic2l6ZSI6NjA3NDgzLCJtaW1lX3R5cGUiOiJ0ZXh0L2NzdiJ9fQ -o data/solution_4th_place.csv
+	curl https://www.datasource.ai/attachments/eyJpZCI6IjMwMDEwMmY3NTNhMzlhN2YxNTk3ODYxZTI1N2Q2NzRmLmNzdiIsInN0b3JhZ2UiOiJzdG9yZSIsIm1ldGFkYXRhIjp7ImZpbGVuYW1lIjoiZGl2aW5lb3B0aW1pemVkd2VpZ2h0c2Vuc2VtYmxlLmNzdiIsInNpemUiOjE3OTU0NzgsIm1pbWVfdHlwZSI6InRleHQvY3N2In19 -o data/solution_5th_place.csv
+    curl https://www.datasource.ai/attachments/eyJpZCI6IjgyMTNhNzcyNTY0NWUyNTljNzViYWFiZDA0ZmJmNDI2LmNzdiIsInN0b3JhZ2UiOiJzdG9yZSIsIm1ldGFkYXRhIjp7ImZpbGVuYW1lIjoiUGhhc2UgMCAtIFByaWNlLmNzdiIsInNpemUiOjc1ODgyOTgsIm1pbWVfdHlwZSI6InRleHQvY3N2In19 -o data/phase_0_price.csv
+    curl https://www.datasource.ai/attachments/eyJpZCI6Ijk4MTNhYmY3ZGZmZmY3NDJhOTBkNWJhMjQwMGQ5ZDkwLmNzdiIsInN0b3JhZ2UiOiJzdG9yZSIsIm1ldGFkYXRhIjp7ImZpbGVuYW1lIjoiUGhhc2UgMSAtIFByaWNlLmNzdiIsInNpemUiOjk2MjI4MywibWltZV90eXBlIjoidGV4dC9jc3YifX0 -o data/phase_1_price.csv
+	@echo "$(CYAN)Download complete!$(COFF)"
 
 # Build and installation
 build: ## Build the package
@@ -30,6 +46,7 @@ install-dev: ## Install development dependencies
 	@echo "$(CYAN)Installing development dependencies...$(COFF)"
 	poetry install --only dev
 	poetry self add poetry-dotenv-plugin
+	poetry run python -m ipykernel install --user --name=vn1forecasting
 
 build-whl: ## Build the wheel package
 	@echo "$(CYAN)Building wheel package...$(COFF)"
