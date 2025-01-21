@@ -17,8 +17,9 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: 3.11
+          python-version: "3.11.8"  # Specify exact version
       - name: Cache dependencies
+        id: cache-dependencies
         uses: actions/cache@v3
         with:
           path: ~/.cache/pypoetry
@@ -38,8 +39,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11.8"
+      - name: Install Poetry
+        run: pip install poetry
+      - name: Install Dependencies
+        run: poetry install
       - name: Run linter
-        run: make lint-check
+        run: poetry run make lint-check
 
   types:
     name: Type Checking
@@ -47,14 +56,30 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11.8"
+      - name: Install Poetry
+        run: pip install poetry
+      - name: Install Dependencies
+        run: poetry install
       - name: Run type checks
-        run: make check-types
-
+        run: poetry run make check-types
+  
   test:
     name: Run Tests
     needs: setup
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11.8"
+      - name: Install Poetry
+        run: pip install poetry
+      - name: Install Dependencies
+        run: poetry install
       - name: Run tests
-        run: make test
+        run: poetry run make test
