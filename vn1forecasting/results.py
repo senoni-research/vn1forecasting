@@ -1,9 +1,13 @@
+from datetime import timedelta
+from typing import Any, Dict, List
+
 import numpy as np
 import pandas as pd
-from datetime import timedelta
 
 
-def save_predictions_in_custom_format(test_predictions, test_samples, output_path):
+def save_predictions_in_custom_format(
+    test_predictions: pd.DataFrame, test_samples: List[Dict[str, Any]], output_path: str
+) -> pd.DataFrame:
     """
     Save predictions in the desired format:
     unique_id (Client-Warehouse-Product), ds (future dates), pred (predictions).
@@ -11,7 +15,6 @@ def save_predictions_in_custom_format(test_predictions, test_samples, output_pat
     Args:
     - test_predictions: DataFrame containing predictions and metadata.
     - test_samples: List of dictionaries containing the test sample metadata (dates).
-    - preprocessor: Instance of DataPreprocessor to decode label-encoded variables.
     - output_path: Path to save the output file (CSV).
 
     Returns:
@@ -26,16 +29,12 @@ def save_predictions_in_custom_format(test_predictions, test_samples, output_pat
 
         # Compute future start date from the corresponding test sample
         sample = test_samples[index]
-        future_start_date = sample['cursor_date']
+        future_start_date = sample["cursor_date"]
 
         # Iterate through predictions for the current row
-        for i, prediction in enumerate(row['Predictions']):
+        for i, prediction in enumerate(row["Predictions"]):
             future_date = future_start_date + timedelta(weeks=i)  # Compute future date
-            results.append({
-                'unique_id': unique_id,
-                'ds': future_date,
-                'senoni': prediction
-            })
+            results.append({"unique_id": unique_id, "ds": future_date, "senoni": prediction})
 
     # Convert to DataFrame
     formatted_df = pd.DataFrame(results)
@@ -57,14 +56,16 @@ def read_and_prepare_data(file_path: str, value_name: str = "y") -> pd.DataFrame
     return df.sort_values(by=["unique_id", "ds"])
 
 
-def get_competition_forecasts(forecast_paths: list) -> pd.DataFrame:
+def get_competition_forecasts(forecast_paths: List[tuple[str, str]]) -> pd.DataFrame:
     """Reads competition forecasts and merges them into a single DataFrame."""
     fcst_dfs = [read_and_prepare_data(file_path, place) for file_path, place in forecast_paths]
     merged_df = pd.concat(fcst_dfs, axis=1)
     return merged_df.loc[:, ~merged_df.columns.duplicated()]
 
 
-def evaluate_forecasts(actual_path: str, formatted_df: pd.DataFrame, forecast_paths: list) -> pd.DataFrame:
+def evaluate_forecasts(
+    actual_path: str, formatted_df: pd.DataFrame, forecast_paths: List[tuple[str, str]]
+) -> pd.DataFrame:
     """
     Evaluate forecasts against actual data and compute scores for each model.
 
@@ -92,13 +93,12 @@ def evaluate_forecasts(actual_path: str, formatted_df: pd.DataFrame, forecast_pa
     # Compute scores for each model
     scores = {
         model: round(
-            (
-                np.nansum(np.abs(result[model] - result["y"])) + 
-                np.abs(np.nansum(result[model] - result["y"]))
-            ) / result["y"].sum(),
-            4
+            (np.nansum(np.abs(result[model] - result["y"])) + np.abs(np.nansum(result[model] - result["y"])))
+            / result["y"].sum(),
+            4,
         )
-        for model in res.columns if model not in ["unique_id", "ds"]
+        for model in res.columns
+        if model not in ["unique_id", "ds"]
     }
 
     # Create and sort score DataFrame
