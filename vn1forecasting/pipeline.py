@@ -159,7 +159,10 @@ def train_model(
                     rolling_13w_sales,
                 ).squeeze(-1)
 
-                loss = model.masked_competition_loss(predictions, target)
+                if phase == "finish":
+                    loss = model.masked_competition_loss(predictions, target)
+                else:
+                    loss = model.masked_loss(predictions, target)
 
                 optimizer.zero_grad()
                 loss.backward()
@@ -167,7 +170,7 @@ def train_model(
                 total_train_loss += loss.item()
 
             val_loss, val_predictions, val_targets = validate_model_with_loss(
-                model, valid_samples, batch_size, prepare_batch_data, device=device
+                model, valid_samples, batch_size, prepare_batch_data, phase, device=device
             )
             print(
                 f"Epoch {epoch}, Train Loss: {total_train_loss / (len(train_samples) // batch_size):.4f}, "
@@ -207,6 +210,7 @@ def validate_model_with_loss(
     val_samples: List[Dict[str, Any]],
     batch_size: int,
     prepare_batch_data: Callable[..., Tuple[torch.Tensor, ...]],
+    phase: str,
     max_past_weeks: int = 52,
     max_future_weeks: int = 13,
     device: str = "cpu",
@@ -282,7 +286,10 @@ def validate_model_with_loss(
                 rolling_13w_sales,
             ).squeeze(-1)
 
-            batch_loss = model.masked_competition_loss(predictions, target)
+            if phase == "finish":
+                batch_loss = model.masked_competition_loss(predictions, target)
+            else:
+                batch_loss = model.masked_loss(predictions, target)
             total_loss += batch_loss.item()
 
             all_predictions.append(predictions.cpu().numpy())

@@ -459,6 +459,7 @@ def prepare_batch_data(
 
     # Prepare decoder input
     future_decoder_input: Tensor = torch.zeros(batch_size, max_future_weeks, 1).to(device)
+    # decoder_input = torch.cat([decoder_inputs, future_decoder_input], dim=1)
     decoder_input: Tensor = future_decoder_input
 
     if mode == "train":
