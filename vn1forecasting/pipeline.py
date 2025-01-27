@@ -41,7 +41,6 @@ def train_model(
         ("init", 1, 24, 50000, 1e-3),
         ("core", 51, 512, 200000, 1e-3),
         ("core", 51, 512, 1, 1e-4),
-        ("core", 51, 512, 1, 1e-5),
         ("tune", 51, 512, 200000, 1e-5),
         ("finish", 51, 512, 200000, 1e-5),
     ],
@@ -67,27 +66,32 @@ def train_model(
         - Validation predictions
         - Validation targets
     """
-    current_best_state: Optional[Dict[str, torch.Tensor]] = None
+    best_model_state: Optional[Dict[str, torch.Tensor]] = None
     val_predictions: NDArray[np.float64] = np.array([])
     val_targets: NDArray[np.float64] = np.array([])
 
     for phase, n_epochs, batch_size, n_samples, lr in phases_config:
-        optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 
         # ---------------------------------------------------------------------------
         # 1) Phase-Specific Freezing
         # ---------------------------------------------------------------------------
         if phase == "tune":
             freeze_module_by_name(model, "embedding")
-            freeze_module_by_name(model, "sales_encoder")
             print("Froze all embedding layers.")
+            freeze_module_by_name(model, "sales_encoder")
             print("Froze the sales encoder.")
 
         if phase == "finish":
-            freeze_module_by_name(model, "price_encoder")
             unfreeze_module_by_name(model, "sales_encoder")
-            print("Froze the price encoder.")
             print("Unfroze the sales encoder.")
+            freeze_module_by_name(model, "embedding")
+            print("Froze all embedding layers.")
+            # freeze_module_by_name(model, "sales_encoder")
+            # print("Froze the sales encoder.")
+            freeze_module_by_name(model, "price_encoder")
+            print("Froze the price encoder.")
+
+        optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=lr)
 
         # ---------------------------------------------------------------------------
         # 2) Sample Generation
@@ -103,7 +107,6 @@ def train_model(
 
         # Initialize early stopping variables
         best_val_loss = float("inf")
-        best_model_state: Optional[Dict[str, torch.Tensor]] = None
         patience_counter = 0
 
         # ---------------------------------------------------------------------------
@@ -159,13 +162,16 @@ def train_model(
                     rolling_13w_sales,
                 ).squeeze(-1)
 
-                if phase == "finish":
+                if phase in []:
                     loss = model.masked_competition_loss(predictions, target)
                 else:
                     loss = model.masked_loss(predictions, target)
 
                 optimizer.zero_grad()
                 loss.backward()
+                grad_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
+                if grad_norm > 1.0:
+                    print(f"Gradient norm before clipping: {grad_norm:.4f}")
                 optimizer.step()
                 total_train_loss += loss.item()
 
@@ -185,22 +191,22 @@ def train_model(
 
             if val_loss < best_val_loss:
                 best_val_loss = val_loss
-                current_best_state = copy.deepcopy(model.state_dict())
+                best_model_state = copy.deepcopy(model.state_dict())
                 patience_counter = 0
             else:
                 patience_counter += 1
 
             if patience_counter >= patience:
                 print(f"Early stopping triggered after {epoch} epochs - no val loss improvement for {patience} epochs")
-                if current_best_state is not None:
-                    model.load_state_dict(cast(Mapping[str, Any], current_best_state))
+                if best_model_state is not None:
+                    model.load_state_dict(cast(Mapping[str, Any], best_model_state))
                 break
 
             current_lr = optimizer.param_groups[0]["lr"]
             print(f"Current learning rate: {current_lr:.2e}")
 
-        if current_best_state is not None:
-            model.load_state_dict(cast(Mapping[str, Any], current_best_state))
+        if best_model_state is not None:
+            model.load_state_dict(cast(Mapping[str, Any], best_model_state))
 
     return model, valid_samples, val_predictions, val_targets
 
@@ -286,7 +292,7 @@ def validate_model_with_loss(
                 rolling_13w_sales,
             ).squeeze(-1)
 
-            if phase == "finish":
+            if phase in []:
                 batch_loss = model.masked_competition_loss(predictions, target)
             else:
                 batch_loss = model.masked_loss(predictions, target)
